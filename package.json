@@ -1,13 +1,13 @@
 {
-  "name":    "facebook-template-node",
+  "name":    "friendcare",
   "version": "0.0.1",
 
-  "description": "Template app for Heroku / Facebook integration, Node.js language",
+  "description": "Follow your friending and unfriending",
 
   "dependencies": {
     "async":     "0.1.18",
-    "ejs":       "0.4.3",
-    "express":   "2.4.6",
+    "ejs":       "0.7.1",
+    "express":   "2.5.9",
     "faceplate": "0.0.4"
   },
 
