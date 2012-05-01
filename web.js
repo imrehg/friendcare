@@ -1,6 +1,27 @@
 var async   = require('async');
 var express = require('express');
 var util    = require('util');
+var jade = require('jade');
+var everyauth = require('everyauth');
+var FacebookClient = require('facebook-client').FacebookClient;
+var facebook = new FacebookClient();
+
+var mongoose = require('mongoose');
+var mongouser = process.env.MONGOUSER;
+var mongopass = process.env.MONGOPASS;
+mongoose.connect('mongodb://'+mongouser+':'+mongopass+'@ds033067.mongolab.com:33067/friendcare');
+
+// configure facebook authentication
+everyauth.facebook
+  .appId(process.env.FACEBOOK_APP_ID)
+  .appSecret(process.env.FACEBOOK_SECRET)
+  .scope('offline_access')
+  .entryPath('/login')
+  .redirectPath('/home')
+  .findOrCreateUser(function() {
+    return({});
+  });
+
 
 // create an express webserver
 var app = express.createServer(
@@ -10,12 +31,18 @@ var app = express.createServer(
   express.cookieParser(),
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'yeahthisissecretYEAH' }),
-  require('faceplate').middleware({
-    app_id: process.env.FACEBOOK_APP_ID,
-    secret: process.env.FACEBOOK_SECRET,
-    scope:  'offline_access'
-  })
+  function(request, response, next) {
+    var method = request.headers['x-forwarded-proto'] || 'http';
+    everyauth.facebook.myHostname(method + '://' + request.headers.host);
+    next();
+  },
+  everyauth.middleware(),
+  require('facebook').Facebook()
 );
+
+app.set('view options', {
+  layout: false
+});
 
 // listen to the PORT given to us in the environment
 var port = process.env.PORT || 3000;
@@ -24,104 +51,42 @@ app.listen(port, function() {
   console.log("Listening on " + port);
 });
 
-app.dynamicHelpers({
-  'host': function(req, res) {
-    return req.headers['host'];
-  },
-  'scheme': function(req, res) {
-    req.headers['x-forwarded-proto'] || 'http'
-  },
-  'url': function(req, res) {
-    return function(path) {
-      return app.dynamicViewHelpers.scheme(req, res) + app.dynamicViewHelpers.url_no_scheme(path);
-    }
-  },
-  'url_no_scheme': function(req, res) {
-    return function(path) {
-      return '://' + app.dynamicViewHelpers.host(req, res) + path;
-    }
-  },
-});
-
-function render_page(req, res) {
-  req.facebook.app(function(app) {
-    req.facebook.me(function(user) {
-      res.render('index.ejs', {
-        layout:    false,
-        req:       req,
-        app:       app,
-        user:      user
-      });
-    });
-  });
-}
-
-function handle_facebook_request(req, res) {
-  // if the user is logged in
-  if (req.facebook.token) {
-    console.log("HaveToken");
-    render_page(req, res);
-  } else {
-    console.log("NotHaveToken");
-    render_page(req, res);
+app.get('/', function(req, res) {
+  if (req.session.auth) {
+      console.log(req.session);
+      res.redirect('/dash');
   }
-}
-// function handle_facebook_request(req, res) {
-
-//   // if the user is logged in
-//   if (req.facebook.token) {
-
-//     async.parallel([
-//       function(cb) {
-//         // query 4 friends and send them to the socket for this socket id
-//         req.facebook.get('/me/friends', { limit: 4 }, function(friends) {
-//           req.friends = friends;
-//           cb();
-//         });
-//       },
-//       function(cb) {
-//         // query 16 photos and send them to the socket for this socket id
-//         req.facebook.get('/me/photos', { limit: 16 }, function(photos) {
-//           req.photos = photos;
-//           cb();
-//         });
-//       },
-//       function(cb) {
-//         // query 4 likes and send them to the socket for this socket id
-//         req.facebook.get('/me/likes', { limit: 4 }, function(likes) {
-//           req.likes = likes;
-//           cb();
-//         });
-//       },
-//       function(cb) {//         // use fql to get a list of my friends that are using this app
-//         req.facebook.fql('SELECT uid, name, is_app_user, pic_square FROM user WHERE uid in (SELECT uid2 FROM friend WHERE uid1 = me()) AND is_app_user = 1', function(result) {
-//           req.friends_using_app = result;
-//           cb();
-//         });
-//       }
-//     ], function() {
-//       render_page(req, res);
-//     });
-
-//   } else {
-//     render_page(req, res);
-//   }
-// }
-
-// app.get('/', handle_facebook_request);
-// app.post('/', handle_facebook_request);
-
-app.get('/', function(request, response) {
-
-       render_page(request, response);
-        // // render the home page
-        // response.render('index.ejs', {
-        //   layout:   false,
-        //   user: 'Greg',
-        //   app:      app
-        // });
-
+  else {
+    res.render('opening.jade', {
+	           title: "Opening"
+              });	    
+  }
 });
+
+app.get('/home', function(req, res) {
+  res.redirect('/dash');
+});
+app.get('/dash', function(req, res) {
+  if (req.session.auth) {
+      res.render('dash.jade', {
+	             title: "Dashboard",
+  		     token: req.session.auth.facebook.accessToken
+      });      
+  } else {
+      res.redirect('/login');
+  }
+});
+
+
+/////////////////////////////////
+app.get('/jade', function(req, res) {
+    console.log(req.facebook.me);
+    res.render('test.jade', {
+	           title: "Testing",
+                   loggedin: req.facebook.token
+              });
+});
+
 
 // respond to GET /home
 app.get('/timeline', function(request, response) {
