@@ -11,6 +11,25 @@ var mongouser = process.env.MONGOUSER;
 var mongopass = process.env.MONGOPASS;
 mongoose.connect('mongodb://'+mongouser+':'+mongopass+'@ds033067.mongolab.com:33067/friendcare');
 
+var Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId;
+
+// Schemas
+var Update = new Schema({
+    date : Date
+  , fgained : [String]
+  , flost : [String]
+});
+
+var User = new Schema({
+    user      : ObjectId
+  , fbid      : String
+  , fbtoken   : String
+  , friendlist: [String]
+  , lastupdate: Date
+  , updates   : [Update]
+});
+
 // configure facebook authentication
 everyauth.facebook
   .appId(process.env.FACEBOOK_APP_ID)
