@@ -117,3 +117,12 @@ app.get('/timeline', function(request, response) {
         });
 
 });
+
+// Catch 404
+app.get('*', function(request, response) {
+	    lookingfor = request.params[0];
+	    response.render('404.jade', {
+				layout:   false,
+				lookingfor: lookingfor
+			    });
+});
