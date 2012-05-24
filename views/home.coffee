@@ -29,6 +29,9 @@ html ->
       h2 "Let's count to 10:"
       p i for i in [1..10]
 
+    p ->
+      "What's up? #{@token}"
+
     footer ->
       # CoffeeScript comments. Not visible in the output document.
       comment 'HTML comments.'

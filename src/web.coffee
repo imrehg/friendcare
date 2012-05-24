@@ -38,10 +38,11 @@ UserModel = conn.model('UserModel', User);
 
 # Main page
 app.get '/', (req, res) ->
-        oneguy = new UserModel fbtoken: uuid.v4()
+        token = uuid.v4()
+        oneguy = new UserModel fbtoken: token
         oneguy.save()
         console.log oneguy.fbtoken
-        res.render 'home', foo: 'bar',  title: 'That\'s how you lip the mic'
+        res.render 'home', foo: 'bar',  title: 'That\'s how you lip the mic', token: token
 
 #####
 # Update database
