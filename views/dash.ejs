@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title><%= title %></title>
+ <link rel="stylesheet" href="/stylesheets/bootstrap.css">
+ <link rel="stylesheet" href="/stylesheets/bootstrap-responsive.css">
+ <style>
+      body {
+        padding-top: 60px;
+      }
+      p#profilepic {
+       background-position: center 25%;
+       width: 64px;
+       height: 64px;
+      }
+ </style>
+ <script src="/scripts/jquery-1.7.2.min.js"></script>
+ <script src="/scripts/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#">Friendcare</a>
+        <div class="nav-collapse">
+          <ul class="nav">
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+	<div class="span12" id="listing">
+          <div class="row-fluid">
+            <div class="span6">
+	      <a href="http://www.facebook.com/<%= everyauth.facebook.user.id %>" target="_blank">
+              <p id="profilepic" style="background-image: url(https://graph.facebook.com/me/picture?type=normal&amp;access_token=<%= everyauth.facebook.accessToken%>)"></p>
+              </a>
+      	      <h3>Welcome, <%= everyauth.facebook.user.name %></h3>
+            </div>
+          </div>
+	  <div class="row-fluid">
+	    <div class="span6"><h2>Gained</h2></div>
+	    <div class="span6"><h2>Lost</h2></div>
+	  </div>
+	  <!-- <h2>Today</h2> -->
+	  <!-- <div class="row-fluid"> -->
+	  <!--   <div class="span6 well">Gained</div> -->
+	  <!--   <div class="span6 well">Level 2</div> -->
+	  <!-- </div> -->
+	  <!-- <h2>Yesterday</h2> -->
+	  <!-- <div class="row-fluid"> -->
+	  <!--   <div class="span6 well">Gained</div> -->
+	  <!--   <div class="span6 well">Level 2</div> -->
+	  <!-- </div> -->
+	  <!-- <h2>2012 March 21</h2> -->
+	  <!-- <div class="row-fluid"> -->
+	  <!--   <div class="span6 well">Gained</div> -->
+	  <!--   <div class="span6 well">Level 2</div> -->
+	  <!-- </div> -->
+	</div>
+      </div>
+      <hr>
+    </div><!--/.fluid-container-->
+
+</body>
+</html>

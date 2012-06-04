@@ -10,40 +10,6 @@
     </div>
   </div>
 
-<div id="fb-root"></div>
-      <script>
-        window.fbAsyncInit = function() {
-          FB.init({
-            appId      : '<%= appID %>',
-            status     : true, 
-            cookie     : true,
-            xfbml      : true,
-            oauth      : true,
-          });
-
-    FB.getLoginStatus(function(response) {
-  if (response.status === 'connected') {
-    var uid = response.authResponse.userID;
-    var accessToken = response.authResponse.accessToken;
-    // alert(uid);
-  } else if (response.status === 'not_authorized') {
-    // the user is logged in to Facebook, 
-    // but has not authenticated your app
-  } else {
-    // the user isn't logged in to Facebook.
-  }
- });
-
-        };
-        (function(d){
-           var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
-           js = d.createElement('script'); js.id = id; js.async = true;
-           js.src = "//connect.facebook.net/en_US/all.js";
-           d.getElementsByTagName('head')[0].appendChild(js);
-         }(document));
-        
-      </script>
-
 <div class="container">
  <div class="hero-unit">
    <h1>Welcome to Friendcare</h1>
@@ -53,7 +19,6 @@
    <p>Important connections don't have to disappear because your world became busier, track your de-friends and reconnect with those whom you care about.
    </p>
    <p><a class="btn btn-primary btn-large" href="/auth/facebook">Login with Facebook</a></p>
-   <div class="fb-login-button" data-redirect-uri="/here">Login with Facebook</div>
  </div>
 </div>
 

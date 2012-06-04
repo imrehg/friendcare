@@ -28,10 +28,10 @@ everyauth.facebook
   .appId(process.env.FACEBOOK_APP_ID)
   .appSecret(process.env.FACEBOOK_SECRET)
   .findOrCreateUser(function(session, accessToken, accessTokExtra, fbUserMetadata) {
-    console.log(accessToken, accessTokExtra);
-    var expire = new Date();
-    expire.setTime(expire.getTime()+accessTokExtra.expires*1000);
-    console.log("Expires:", expire);
+    // console.log(accessToken, accessTokExtra);
+    // var expire = new Date();
+    // expire.setTime(expire.getTime()+accessTokExtra.expires*1000);
+    // console.log("Expires:", expire);
     return usersByFbId[fbUserMetadata.id] || (usersByFbId[fbUserMetadata.id] = addUser('facebook', fbUserMetadata));
    })
   .redirectPath('/dash');
@@ -67,11 +67,14 @@ app.get("/", function (req, res) {
 });
 
 app.get("/dash", function (req, res) {
-  // console.log(util.inspect(everyauth.facebook));
-  // console.log(util.inspect(everyauth.facebook.user));
-  res.render('dash.ejs', {
-		 title: "Friendcare"
-	     });
+    if (! req.loggedIn) {
+	res.redirect("/");
+    } else {
+	res.render('dash.ejs', {
+	    title: "Friendcare",
+	    user: req.user
+	});
+    }
 });
 
 var port = process.env.PORT || 3000;
