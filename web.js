@@ -5,6 +5,7 @@ var express = require('express')
   , ejs = require('ejs')
   , graph = require('fbgraph')
   , mongoose = require('mongoose')
+  , underscore = require('underscore')
   ;
 
 var appID = process.env.FACEBOOK_APP_ID
@@ -69,9 +70,20 @@ everyauth.facebook
 	      newperson.facebook.authexpire = expire;
 	      newperson.facebook.friendlist = [];
 	      newperson.save();
+	      updateFriends(fbUserMetadata.id, true);
 	      return promise.fulfill(usersByFbId[fbUserMetadata.id] || (usersByFbId[fbUserMetadata.id] = addUser('facebook', fbUserMetadata)));
 	  } else {
 	      console.log("User exists");
+	      var expire = new Date();
+	      expire.setTime(expire.getTime()+accessTokExtra.expires*1000);
+	      console.log("--->", expire);
+	      var conditions = { "facebook.userid": fbUserMetadata.id }
+	        , update = { "facebook.authtoken": accessToken, "facebook.authexpire": expire}
+	        , options = { multi: true };
+              console.log(update);
+	      PersonModel.update(conditions, update, options, function(err, numAffected) {
+		  console.log("Update done: "+numAffected+" row");
+	      });
 	      return promise.fulfill(usersByFbId[fbUserMetadata.id] || (usersByFbId[fbUserMetadata.id] = addUser('facebook', fbUserMetadata)));
 	  }
       });
@@ -95,6 +107,7 @@ function addUser(source, sourceUser) {
 }
 everyauth.debug = true;
 
+
 app.configure(function() {
     app.use(everyauth.middleware());
     app.use(express.methodOverride());
@@ -109,14 +122,72 @@ app.get("/", function (req, res) {
 		 });
 });
 
+function updateFriends(id, first) {
+    PersonModel.findOne({"facebook.userid" : id}, function(err, user) {
+	if (err) {
+	    return
+	} else if (!user) {
+	    console.log("Update friends: no such user?");
+	    return
+	} else {
+	    graph.setAccessToken(user.facebook.authtoken);
+	    console.log(id)
+	    graph.get(id, {fields : 'friends', limit: '5000', offset: '0'}, function(err, res) {
+		var newlist = underscore.map(res.friends.data, function(val) {return val.id});
+		var oldlist = user.facebook.friendlist;
+		var gain = underscore.difference(newlist, oldlist);
+		var loss = underscore.difference(oldlist, newlist);
+		console.log("Gain", gain);
+		console.log("Loss", loss);
+		// var changes = new ChangeSchema({gain: gain, loss: loss});
+
+		if (first) {
+		    console.log("Firstupdate")
+	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": Date.now() }
+		} else if ((gain.length > 0) || (loss.length > 0)) {
+		    console.log("Friendsupdate");
+	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": Date.now(), "$push": {"facebook.changes": {"gain": gain, "loss": loss} } }
+		} else {
+		    console.log("Singleupdate");
+		    update = { "facebook.lastcheck": Date.now() }
+		}
+		var conditions = { "facebook.userid": id }
+	          , options = { multi: false };
+
+		PersonModel.update(conditions, update, options, function(err, numAffected) {
+	      	    console.log("Update done: "+numAffected+" row");
+		});
+		
+	    });
+	}
+    });
+}
+
+app.get("/allupdate", function(req, res) {
+    PersonModel.find({}, function(err, users) {
+	users.forEach( function(user){
+	    updateFriends(user.facebook.userid);
+	});	
+    });
+    res.send("Yup!");
+});
+    
 app.get("/dash", function (req, res) {
     if (! req.loggedIn) {
 	res.redirect("/");
     } else {
-	res.render('dash.ejs', {
-	    title: "Friendcare",
-	    user: req.user
-	});
+	var id = req.session.auth.facebook.user.id;
+	PersonModel.findOne({"facebook.userid" : id}, function(err, user) {
+	    console.log(user.facebook);
+	    // var changes = underscore.shortBy(user.facebook.changes, function(change){ return change.date; });
+	    var changes = user.facebook.changes;
+	    res.render('dash.ejs', {
+		title: "Friendcare",
+		user: user,
+		facebook: user.facebook,
+		changes: changes
+	    });
+	})
     }
 });
 
