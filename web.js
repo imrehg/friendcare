@@ -164,7 +164,7 @@ function updateFriends(id, first) {
 }
 
 app.get("/allupdate", function(req, res) {
-    if req.query('auth') == process.env.UPDATESECRET {
+    if (req.query('auth') == process.env.UPDATESECRET) {
 	PersonModel.find({}, function(err, users) {
 	    users.forEach( function(user){
 		updateFriends(user.facebook.userid);
