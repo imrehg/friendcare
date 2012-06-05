@@ -164,12 +164,16 @@ function updateFriends(id, first) {
 }
 
 app.get("/allupdate", function(req, res) {
-    PersonModel.find({}, function(err, users) {
-	users.forEach( function(user){
-	    updateFriends(user.facebook.userid);
-	});	
-    });
-    res.send("Yup!");
+    if req.query('auth') == process.env.UPDATESECRET {
+	PersonModel.find({}, function(err, users) {
+	    users.forEach( function(user){
+		updateFriends(user.facebook.userid);
+	    });
+	});
+	res.send("Yup!");
+    } else {
+	res.send("Nope");
+    }
 });
     
 app.get("/dash", function (req, res) {
