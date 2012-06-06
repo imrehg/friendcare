@@ -15,28 +15,28 @@
 	<div class="span12" id="listing">
           <div class="row-fluid">
             <div class="span6">
-	      <a href="http://www.facebook.com/<%= facebook.userid %>" target="_blank">
-              <p id="profilepic" style="background-image: url(https://graph.facebook.com/me/picture?type=normal&amp;access_token=<%= facebook.authtoken %>)"></p>
+	      <a href="http://www.facebook.com/<%= thisuser.userid %>" target="_blank">
+              <p id="profilepic" style="background-image: url(https://graph.facebook.com/me/picture?type=normal&amp;access_token=<%= thisuser.authtoken %>)"></p>
               </a>
-              <h3>At the moment we know about <%= facebook.friendlist.length %> friends of yours.<h3>
+              <h3>At the moment we know about <%= thisuser.friendcount %> friends of yours.<h3>
             </div>
           </div>
-	  <% if (changes.length > 0) { %>
+	  <% if (dates.length > 0) { %>
 	  <div class="row-fluid">
 	    <div class="span6"><h2>Gained</h2></div>
 	    <div class="span6"><h2>Lost</h2></div>
 	  </div>
-	    <% for (var c = 0; c < changes.length; c++) { %>
-	     <h2><span class="dateAndTime"><%= changes[c].date.toISOString() %></span></h2>
+	    <% for (var c = 0; c < dates.length; c++) { %>
+	     <h2><span class="dateAndTime"><%= dates[c] %></span></h2>
 	     <div class="row-fluid">
 	       <div class="span6 well">
-		 <% for (var g = 0; g < changes[c].gain.length; g++) { %>
-		    <a href="https://www.facebook.com/<%=  changes[c].gain[g] %>" target="_blank"><img src="https://graph.facebook.com/<%=  changes[c].gain[g] %>/picture" class="smallprofile"></a>
+		 <% for (var g = 0; g < grouped[dates[c]].gain.length; g++) { %>
+		    <a href="https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>" target="_blank"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].gain[g] %>/picture" class="smallprofile"></a>
 		 <% } %>
 	       </div>
 	       <div class="span6 well">
-		 <% for (var x = 0; x < changes[c].loss.length; x++) { %>
-		    <a href="https://www.facebook.com/<%=  changes[c].loss[x] %>" target="_blank"><img src="https://graph.facebook.com/<%=  changes[c].loss[x] %>/picture" class="smallprofile"></a>
+		 <% for (var x = 0; x < grouped[dates[c]].loss.length; x++) { %>
+		    <a href="https://www.facebook.com/<%=  grouped[dates[c]].loss[x] %>" target="_blank"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture" class="smallprofile"></a>
 		 <% } %>
 	       </div>
 	     </div>

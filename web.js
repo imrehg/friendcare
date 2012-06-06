@@ -175,21 +175,49 @@ app.get("/allupdate", function(req, res) {
 	res.send("Nope");
     }
 });
-    
+
+// http://www.electrictoolbox.com/pad-number-two-digits-javascript/
+function pad2(number) {
+     return (number < 10 ? '0' : '') + number
+}
+
+function getSimpleDate(date) {
+    return date.getFullYear()+"-"+pad2(date.getMonth())+"-"+pad2(date.getDate());
+}
+
 app.get("/dash", function (req, res) {
     if (! req.loggedIn) {
 	res.redirect("/");
     } else {
 	var id = req.session.auth.facebook.user.id;
 	PersonModel.findOne({"facebook.userid" : id}, function(err, user) {
-	    console.log(user.facebook);
-	    // var changes = underscore.shortBy(user.facebook.changes, function(change){ return change.date; });
-	    var changes = user.facebook.changes;
+	    // var sortchange = underscore.sortBy(user.facebook.changes, function(change) { return change.date; });
+	    // Sorting
+	    // var sortchange = underscore.sortBy(user.facebook.changes, function(change) { return change.date; });
+	    // Group all updates into a single day
+	    var grouped = underscore.groupBy(user.facebook.changes, function(change) {return getSimpleDate(change.date);});
+	    for (date in grouped) {
+		var x = grouped[date];
+		var y = underscore.reduce(x,
+					  function(total, current) {
+					      var newgain = underscore.union(total.gain, current.gain);
+					      var newloss = underscore.union(total.loss, current.loss);
+					      return { gain: newgain, loss: newloss };
+					  },
+					  { gain: [], loss: [] } );
+		var gain = underscore.difference(y.gain, y.loss);
+		var loss = underscore.difference(y.loss, y.gain);
+		grouped[date] = {gain: gain, loss: loss};
+	    }
+	    var dates = Object.keys(grouped).sort().reverse();
+	    console.log(dates);
+	    console.log(grouped);
+	    var thisuser = {userid: id, friendcount: user.facebook.friendlist.length, authtoken: user.facebook.authtoken };
 	    res.render('dash.ejs', {
 		title: "Friendcare",
-		user: user,
-		facebook: user.facebook,
-		changes: changes
+		thisuser: thisuser,
+		grouped: grouped,
+		dates: dates
 	    });
 	})
     }
