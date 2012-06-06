@@ -191,34 +191,47 @@ app.get("/dash", function (req, res) {
     } else {
 	var id = req.session.auth.facebook.user.id;
 	PersonModel.findOne({"facebook.userid" : id}, function(err, user) {
-	    // var sortchange = underscore.sortBy(user.facebook.changes, function(change) { return change.date; });
-	    // Sorting
-	    // var sortchange = underscore.sortBy(user.facebook.changes, function(change) { return change.date; });
-	    // Group all updates into a single day
-	    var grouped = underscore.groupBy(user.facebook.changes, function(change) {return getSimpleDate(change.date);});
-	    for (date in grouped) {
-		var x = grouped[date];
-		var y = underscore.reduce(x,
-					  function(total, current) {
-					      var newgain = underscore.union(total.gain, current.gain);
-					      var newloss = underscore.union(total.loss, current.loss);
-					      return { gain: newgain, loss: newloss };
-					  },
-					  { gain: [], loss: [] } );
-		var gain = underscore.difference(y.gain, y.loss);
-		var loss = underscore.difference(y.loss, y.gain);
-		grouped[date] = {gain: gain, loss: loss};
-	    }
-	    var dates = Object.keys(grouped).sort().reverse();
-	    console.log(dates);
-	    console.log(grouped);
-	    var thisuser = {userid: id, friendcount: user.facebook.friendlist.length, authtoken: user.facebook.authtoken };
-	    res.render('dash.ejs', {
-		title: "Friendcare",
-		thisuser: thisuser,
-		grouped: grouped,
-		dates: dates
-	    });
+	    if (user.facebook.friendlist.length > 0) {
+		var grouped = underscore.groupBy(user.facebook.changes, function(change) {return getSimpleDate(change.date);});
+		for (date in grouped) {
+		    var x = grouped[date];
+		    var y = underscore.reduce(x,
+					      function(total, current) {
+						  var newgain = underscore.union(total.gain, current.gain);
+						  var newloss = underscore.union(total.loss, current.loss);
+						  return { gain: newgain, loss: newloss };
+					      },
+					      { gain: [], loss: [] } );
+		    var gain = underscore.difference(y.gain, y.loss);
+		    var loss = underscore.difference(y.loss, y.gain);
+		    grouped[date] = {gain: gain, loss: loss};
+		}
+		var dates = Object.keys(grouped).sort().reverse();
+		console.log(dates);
+		console.log(grouped);
+		var thisuser = {userid: id, friendcount: user.facebook.friendlist.length, authtoken: user.facebook.authtoken };
+		res.render('dash.ejs', {
+		    title: "Friendcare",
+		    thisuser: thisuser,
+		    grouped: grouped,
+		    dates: dates
+		});
+	    } else {
+		// Likely very first update where the database is not done yet
+		graph.setAccessToken(user.facebook.authtoken);
+		graph.get(id, {fields : 'friends', limit: '5000', offset: '0'}, function(err, fbres) {
+		    var friendcount = 0;
+		    if (!err) {
+			friendcount = fbres.friends.data.length;
+		    }
+		    var thisuser = {userid: id, friendcount: friendcount, authtoken: user.facebook.authtoken };
+		    res.render('dash.ejs', {
+			title: "Friendcare",
+			thisuser: thisuser,
+			dates: []
+		    }); //res.render
+		}); // graph.get
+	    } // else
 	})
     }
 });
