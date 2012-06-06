@@ -137,9 +137,6 @@ function updateFriends(id, first) {
 		var oldlist = user.facebook.friendlist;
 		var gain = underscore.difference(newlist, oldlist);
 		var loss = underscore.difference(oldlist, newlist);
-		console.log("Gain", gain);
-		console.log("Loss", loss);
-		// var changes = new ChangeSchema({gain: gain, loss: loss});
 
 		if (first) {
 		    console.log("Firstupdate")
@@ -157,7 +154,6 @@ function updateFriends(id, first) {
 		PersonModel.update(conditions, update, options, function(err, numAffected) {
 	      	    console.log("Update done: "+numAffected+" row");
 		});
-		
 	    });
 	}
     });
