@@ -192,7 +192,7 @@ function pad2(number) {
 }
 
 function getSimpleDate(date) {
-    return date.getFullYear()+"-"+pad2(date.getMonth())+"-"+pad2(date.getDate());
+    return date.getFullYear()+"-"+pad2(date.getMonth()+1)+"-"+pad2(date.getDate());
 }
 
 app.get("/dash", function (req, res) {
