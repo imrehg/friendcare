@@ -252,8 +252,11 @@ app.error(function(err, req, res, next){
     if (err instanceof NotFound) {
         res.render('404.ejs', { status: 404 });
     } else {
-	res.send("Errored...", {status: 500});
+	throw err;
     }
+    // } else {
+    // 	res.send("Errored...", {status: 500});
+    // }
 });
 
 var port = process.env.PORT || 3000;

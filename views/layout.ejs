@@ -20,6 +20,8 @@
         height: 64px;
       }
       .smallprofile {
+        width: 50px;
+        height: 50px;
         padding: 5px;
       }
  </style>
@@ -31,5 +33,35 @@
 </head>
 <body>
 <%- body %>
+
+<!-- Facebook -->
+<div id="fb-root"></div>
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : 'YOUR_APP_ID', // App ID
+      channelUrl : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+      status     : true, // check login status
+      cookie     : true, // enable cookies to allow the server to access the session
+      xfbml      : true  // parse XFBML
+    });
+
+    // Additional initialization code here
+  };
+
+  // Load the SDK Asynchronously
+  (function(d){
+     var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement('script'); js.id = id; js.async = true;
+     js.src = "//connect.facebook.net/en_US/all.js";
+     ref.parentNode.insertBefore(js, ref);
+   }(document));
+</script>
+<!-- Facebook end -->
+<footer align=center>
+<div style="width: 500px;" class="fb-like" data-href="http://friendcare.herokuapp.com" data-send="true" data-width="500" data-show-faces="true" data-action="recommend"></div>
+<div class="credits">2012 by <a href="http://gergely.imreh.net" target="_blank">GI</a></div>
+</footer>
 </body>
 </html>

@@ -15,26 +15,26 @@
 	<div class="span12" id="listing">
           <div class="row-fluid">
             <div class="span6">
-	      <a href="http://www.facebook.com/<%= thisuser.userid %>" target="_blank">
-              <p id="profilepic" style="background-image: url(https://graph.facebook.com/me/picture?type=normal&amp;access_token=<%= thisuser.authtoken %>)"></p>
-              </a>
+              <a class="thumbnail" style="width: 100px;" href="http://www.facebook.com/<%= thisuser.userid %>" target="_blank"><img src="https://graph.facebook.com/<%= thisuser.userid %>/picture?type=normal"></a>
               <h3>At the moment we know about <%= thisuser.friendcount %> friends of yours.<h3>
             </div>
           </div>
 	  <% if (dates.length > 0) { %>
-	  <div class="row-fluid">
-	    <div class="span6"><h2>Gained</h2></div>
-	    <div class="span6"><h2>Lost</h2></div>
-	  </div>
 	    <% for (var c = 0; c < dates.length; c++) { %>
 	     <h2><span class="dateAndTime"><%= dates[c] %></span></h2>
 	     <div class="row-fluid">
-	       <div class="span6 well">
+	       <div class="span6">
+	         <% if (grouped[dates[c]].gain.length > 0) { %>
+	         <h3>Gained</h3>
+	         <% } %>
 		 <% for (var g = 0; g < grouped[dates[c]].gain.length; g++) { %>
-		    <a href="https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>" target="_blank"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].gain[g] %>/picture" class="smallprofile"></a>
+		    <a href="https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>" target="_blank"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].gain[g] %>/picture" class="smallprofile thumbnail"></a>
 		 <% } %>
 	       </div>
-	       <div class="span6 well">
+	       <div class="span6">
+	         <% if (grouped[dates[c]].loss.length > 0) { %>
+	         <h3>Lost</h3>
+	         <% } %>
 		 <% for (var x = 0; x < grouped[dates[c]].loss.length; x++) { %>
 		    <a href="https://www.facebook.com/<%=  grouped[dates[c]].loss[x] %>" target="_blank"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture" class="smallprofile"></a>
 		 <% } %>
