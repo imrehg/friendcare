@@ -258,7 +258,7 @@ function NotFound(msg){
 
 app.error(function(err, req, res, next){
     if (err instanceof NotFound) {
-        res.render('404.ejs', { status: 404 });
+        res.render('404.ejs', { title: "Not found | Friendcare", status: 404 });
     } else {
 	throw err;
     }
