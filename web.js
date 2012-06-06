@@ -26,6 +26,17 @@ var app = express.createServer(
 everyauth.helpExpress(app);
 everyauth.debug = true;
 
+// Ensure HTTPS: http://elias.kg/post/14971446990/force-ssl-with-express-js-on-heroku-nginx
+app.use(function(req, res, next) {
+    var schema = req.headers["x-forwarded-proto"];
+
+    if (!schema || schema === "https") {
+        return next();
+    }
+    // --- Redirect to https
+    res.redirect("https://" + req.headers.host + req.url);
+});
+
 var usersById = {};
 var usersByFbId = {};
 var nextUserId = {};
