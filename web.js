@@ -236,6 +236,26 @@ app.get("/dash", function (req, res) {
     }
 });
 
+
+//The 404 Route (ALWAYS Keep this as the last route)
+app.get('/*', function(req, res){
+    throw new NotFound;
+});
+
+function NotFound(msg){
+    this.name = 'NotFound';
+    Error.call(this, msg);
+    Error.captureStackTrace(this, arguments.callee);
+}
+
+app.error(function(err, req, res, next){
+    if (err instanceof NotFound) {
+        res.render('404.ejs', { status: 404 });
+    } else {
+	res.send("Errored...", {status: 500});
+    }
+});
+
 var port = process.env.PORT || 3000;
 
 app.listen(port, function() {
