@@ -217,8 +217,6 @@ app.get("/dash", function (req, res) {
 		    grouped[date] = {gain: gain, loss: loss};
 		}
 		var dates = Object.keys(grouped).sort().reverse();
-		console.log(dates);
-		console.log(grouped);
 		var thisuser = {userid: id, friendcount: user.facebook.friendlist.length, authtoken: user.facebook.authtoken };
 		res.render('dash.ejs', {
 		    title: "Friendcare",
