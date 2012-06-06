@@ -1,2 +1,2 @@
 #!/bin/bash
-curl -s http://friendcare.herokuapp.com/allupdate?auth=${UPDATESECRET}
+curl -s https://friendcare.herokuapp.com/allupdate?auth=${UPDATESECRET}
