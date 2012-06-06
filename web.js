@@ -18,7 +18,6 @@ var app = express.createServer(
   , express.static(__dirname + '/public')
   , express.bodyParser()
   , express.cookieParser()
-  , express.favicon()
   , everyauth.middleware()
   , express.session({secret: process.env.SESSION_SECRET || 'kdgfcbdgfsgftsrcgsgr'})
   , express.errorHandler()
