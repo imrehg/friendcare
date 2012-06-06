@@ -116,10 +116,14 @@ app.configure(function() {
 });
 
 app.get("/", function (req, res) {
-  res.render('front.ejs', {
-                 title: "Welcome to Friendcare",
-		 appID: appID
-		 });
+    if (req.loggedIn) {
+	res.redirect("/dash");
+    } else {
+	res.render('front.ejs',
+		   { title: "Welcome to Friendcare",
+		     appID: appID
+		   });
+    }
 });
 
 function updateFriends(id, first) {
