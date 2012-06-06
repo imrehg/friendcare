@@ -195,6 +195,21 @@ function getSimpleDate(date) {
     return date.getFullYear()+"-"+pad2(date.getMonth()+1)+"-"+pad2(date.getDate());
 }
 
+function checktime(date) {
+    var now = Date.now();
+    var timediff = (now - date) / 1000;
+    if (timediff < 120) {
+	res = "just now";
+    } else if (timediff < 3600) {
+	res = Math.floor(timediff / 60) + " minutes ago";
+    } else if (timediff < 129600) {
+	res = "about " + Math.round(timediff / 3600) + " hours ago";
+    } else {
+	res = "about " + Math.round(timediff / 86400) + " days ago";
+    }
+    return res;
+}
+
 app.get("/dash", function (req, res) {
     if (! req.loggedIn) {
 	res.redirect("/");
@@ -222,7 +237,8 @@ app.get("/dash", function (req, res) {
 		    title: "Friendcare",
 		    thisuser: thisuser,
 		    grouped: grouped,
-		    dates: dates
+		    dates: dates,
+		    lastcheck: checktime(user.facebook.lastcheck)
 		});
 	    } else {
 		// Likely very first update where the database is not done yet
@@ -236,7 +252,8 @@ app.get("/dash", function (req, res) {
 		    res.render('dash.ejs', {
 			title: "Friendcare",
 			thisuser: thisuser,
-			dates: []
+			dates: [],
+			lastcheck: "just now"
 		    }); //res.render
 		}); // graph.get
 	    } // else
