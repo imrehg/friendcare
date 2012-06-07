@@ -13,6 +13,8 @@ var appID = process.env.FACEBOOK_APP_ID
   , ObjectId = Schema.ObjectId
   ;
 
+var myapp = { id : appID };
+
 var app = express.createServer(
     express.logger()
   , express.static(__dirname + '/public')
@@ -131,7 +133,9 @@ app.get("/", function (req, res) {
     } else {
 	res.render('front.ejs',
 		   { title: "Welcome to Friendcare",
-		     appID: appID
+		     appID: appID,
+		     myapp: myapp,
+		     req: req
 		   });
     }
 });
@@ -238,7 +242,9 @@ app.get("/dash", function (req, res) {
 		    thisuser: thisuser,
 		    grouped: grouped,
 		    dates: dates,
-		    lastcheck: checktime(user.facebook.lastcheck)
+		    lastcheck: checktime(user.facebook.lastcheck),
+		    myapp: myapp,
+		    req: req
 		});
 	    } else {
 		// Likely very first update where the database is not done yet
@@ -253,7 +259,9 @@ app.get("/dash", function (req, res) {
 			title: "Friendcare",
 			thisuser: thisuser,
 			dates: [],
-			lastcheck: "just now"
+			lastcheck: "just now",
+			myapp: myapp,
+			req: req
 		    }); //res.render
 		}); // graph.get
 	    } // else
@@ -275,7 +283,10 @@ function NotFound(msg){
 
 app.error(function(err, req, res, next){
     if (err instanceof NotFound) {
-        res.render('404.ejs', { title: "Not found | Friendcare", status: 404 });
+        res.render('404.ejs', { title: "Not found | Friendcare",
+				myapp: myapp,
+				req: req,
+				status: 404 });
     } else {
 	throw err;
     }

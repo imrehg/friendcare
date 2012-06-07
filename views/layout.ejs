@@ -48,8 +48,8 @@
 <script>
   window.fbAsyncInit = function() {
     FB.init({
-      appId      : 'YOUR_APP_ID', // App ID
-      channelUrl : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+      appId      : '<%= myapp.id %>', // App ID
+      channelUrl : '//<%= req.headers.host %>/channel.html', // Channel File
       status     : true, // check login status
       cookie     : true, // enable cookies to allow the server to access the session
       xfbml      : true  // parse XFBML
@@ -69,7 +69,7 @@
 </script>
 <!-- Facebook end -->
 <footer align=center>
-<div style="width: 500px;" class="fb-like" data-href="https://friendcare.herokuapp.com" data-send="true" data-width="500" data-show-faces="true" data-action="recommend"></div>
+<div style="width: 500px;" class="fb-like" data-href="https://friendcare.herokuapp.com" data-send="true" data-width="500" data-show-faces="true" data-action="like"></div>
 <div class="credits">2012 by <a href="http://gergely.imreh.net" target="_blank">GI</a></div>
 </footer>
 </body>
