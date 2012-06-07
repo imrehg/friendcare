@@ -132,7 +132,7 @@ app.get("/", function (req, res) {
 	res.redirect("/dash");
     } else {
 	res.render('front.ejs',
-		   { title: "Welcome to Friendcare",
+		   { title: "Friendcare",
 		     appID: appID,
 		     myapp: myapp,
 		     req: req
