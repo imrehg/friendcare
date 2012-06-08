@@ -57,7 +57,8 @@ var PersonSchema = new Schema({
 	friendlist: [String],
 	lastcheck: {type: Date, default: Date.now},
 	changes: [ChangeSchema]
-    }
+    },
+    lastlogin: {type: Date, default: Date.now}
 });
 
 mongoose.connect('mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_URL);
@@ -90,7 +91,10 @@ everyauth.facebook
 	      expire.setTime(expire.getTime()+accessTokExtra.expires*1000);
 	      console.log("--->", expire);
 	      var conditions = { "facebook.userid": fbUserMetadata.id }
-	        , update = { "facebook.authtoken": accessToken, "facebook.authexpire": expire}
+	        , update = { "facebook.authtoken": accessToken,
+			     "facebook.authexpire": expire,
+			     "lastlogin": Date.now()
+			   }
 	        , options = { multi: true };
               console.log(update);
 	      PersonModel.update(conditions, update, options, function(err, numAffected) {
