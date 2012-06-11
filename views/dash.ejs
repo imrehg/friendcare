@@ -23,25 +23,29 @@
 	    <% for (var c = 0; c < dates.length; c++) { %>
 	     <h2><span class="dateAndTime"><%= dates[c] %></span></h2>
 	     <div class="row-fluid">
-	       <div class="span6">
 	         <% if (grouped[dates[c]].gain.length > 0) { %>
-	         <h3>Gained</h3>
+		 <div class="span6 well">
+	         <h2>Gained</h2>
                  <ul class="thumbnails">
 		 <% for (var g = 0; g < grouped[dates[c]].gain.length; g++) { %>
 		    <li><a href="https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>" target="_blank" class="smallprofile thumbnail"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].gain[g] %>/picture?type=normal&return_ssl_resources=1"></a><div class="caption"><p align="center" style="padding: 5px;"><a href='https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>' target="_blank" class="btn btn-primary">Profile</a></p></div></li>
-		 <% } %>
+		 <% }%>
                  </ul>
-	         <% } %>
+	         <% } else { %>
+		 <div class="span6">
+		 <% }%>
 	       </div>
-	       <div class="span6">
 	         <% if (grouped[dates[c]].loss.length > 0) { %>
-	         <h3>Lost</h3>
+	         <div class="span6 well">
+	         <h2>Lost</h2>
                  <ul class="thumbnails">
 		 <% for (var x = 0; x < grouped[dates[c]].loss.length; x++) { %>
 		    <li><a href="https://www.facebook.com/<%=  grouped[dates[c]].loss[x] %>" target="_blank" class="smallprofile thumbnail"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture?type=normal&return_ssl_resources=1"></a><div class="caption"><p align="center" style="padding: 5px;"><a href='https://www.facebook.com/<%=  grouped[dates[c]].loss[x] %>' target="_blank" class="btn btn-primary">Profile</a></p></div></li>
 		 <% } %>
                  </ul>
-	         <% } %>
+	         <% } else { %>
+		 <div class="span6">
+		 <% }%>
 	       </div>
 	     </div>
 	    <% } %>
