@@ -61,9 +61,22 @@ var PersonSchema = new Schema({
     lastlogin: {type: Date, default: Date.now}
 });
 
+var EventSchema = new Schema({
+    event : ObjectId,
+    date : {type: Date, default: Date.now},
+    desc : String
+});
+
 mongoose.connect('mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_URL);
 var PersonModel = mongoose.model('Person', PersonSchema);
+var EventModel = mongoose.model('Event', EventSchema);
 
+// Add a new event to the logs
+function addEvent(description) {
+    var newEvent = new EvebtModel();
+    newEvent.desc = description;
+    newEvent.save();
+};
 
 everyauth.facebook
   .appId(process.env.FACEBOOK_APP_ID)
