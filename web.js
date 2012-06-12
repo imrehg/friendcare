@@ -6,6 +6,7 @@ var express = require('express')
   , graph = require('fbgraph')
   , mongoose = require('mongoose')
   , underscore = require('underscore')
+  , async = require('async')
   ;
 
 var appID = process.env.FACEBOOK_APP_ID
@@ -165,10 +166,34 @@ function updateFriends(id, first) {
 	    console.log("Update friends: no such user?");
 	    return
 	} else {
-	    graph.setAccessToken(user.facebook.authtoken);
-	    console.log(id)
-	    graph.get(id, {fields : 'friends', limit: '5000', offset: '0'}, function(err, res) {
-		var newlist = underscore.map(res.friends.data, function(val) {return val.id});
+	    async.series([
+		function(callback){
+		    console.log(id, "Graph update")
+		    graph.setAccessToken(user.facebook.authtoken);
+		    graph.get(id, {fields : 'friends', limit: '5000', offset: '0'}, function(err, res) {
+			var newlistG = underscore.map(res.friends.data, function(val) {return val.id.toString(); });
+			callback(null, newlistG);
+		    });
+		},
+		function(callback){
+		    console.log(id, "FQL update");
+		    var query = "SELECT uid, name FROM user where uid in (Select uid2 from friend where uid1=me())";
+		    graph.setAccessToken(user.facebook.authtoken);
+		    graph.fql(query, function(err, res) {
+			var newlistF = underscore.map(res.data, function(x) {return x.uid.toString(); });
+			callback(null, newlistF);
+		    });
+		}
+	    ],
+	    function(err, results){
+		var newG = results[0],
+		    newF = results[1];
+		var except = underscore.union(underscore.difference(newG, newF), underscore.difference(newF, newG));
+		if (except.length > 0) {
+		    addEvent("Different length for Graph/FQL "+id.toString()+":"+except.join());
+		};
+
+		var newlist = newF;  // Trust FQL more somehow
 		var oldlist = user.facebook.friendlist;
 		var gain = underscore.difference(newlist, oldlist);
 		var loss = underscore.difference(oldlist, newlist);
@@ -177,7 +202,7 @@ function updateFriends(id, first) {
 		    console.log("Firstupdate")
 	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": Date.now() }
 		} else if ((gain.length > 0) || (loss.length > 0)) {
-		    console.log("Friendsupdate");
+		    console.log("Friendsupdate", gain, loss);
 	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": Date.now(), "$push": {"facebook.changes": {"gain": gain, "loss": loss} } }
 		} else {
 		    console.log("Singleupdate");
