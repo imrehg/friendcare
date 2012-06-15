@@ -68,7 +68,7 @@ var EventSchema = new Schema({
     desc : String
 });
 
-mongoose.connect('mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_URL);
+mongoose.connect('mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_URL+'/'+process.env.MONGO_DB);
 var PersonModel = mongoose.model('Person', PersonSchema);
 var EventModel = mongoose.model('Event', EventSchema);
 
