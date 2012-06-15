@@ -171,8 +171,13 @@ function updateFriends(id, first) {
 		    console.log(id, "Graph update")
 		    graph.setAccessToken(user.facebook.authtoken);
 		    graph.get(id, {fields : 'friends', limit: '5000', offset: '0'}, function(err, res) {
-			var newlistG = underscore.map(res.friends.data, function(val) {return val.id.toString(); });
-			callback(null, newlistG);
+			if (err) {
+			    callback(err, null);
+			} else {
+		            console.log(id);
+			    var newlistG = underscore.map(res.friends.data, function(val) {return val.id.toString(); });
+			    callback(null, newlistG);
+			}
 		    });
 		},
 		function(callback){
@@ -180,12 +185,21 @@ function updateFriends(id, first) {
 		    var query = "SELECT uid, name FROM user where uid in (Select uid2 from friend where uid1=me())";
 		    graph.setAccessToken(user.facebook.authtoken);
 		    graph.fql(query, function(err, res) {
-			var newlistF = underscore.map(res.data, function(x) {return x.uid.toString(); });
-			callback(null, newlistF);
+			if (err) {
+			    callback(err, null);
+			} else {
+			    var newlistF = underscore.map(res.data, function(x) {return x.uid.toString(); });
+			    callback(null, newlistF);
+			}
 		    });
 		}
 	    ],
 	    function(err, results){
+		if (err) {
+		    console.log("Error:"+id+"->");
+		    console.log(err);
+		    return
+		}
 		var newG = results[0],
 		    newF = results[1];
 		var except = underscore.union(underscore.difference(newG, newF), underscore.difference(newF, newG));
