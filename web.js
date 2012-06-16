@@ -74,7 +74,7 @@ var EventModel = mongoose.model('Event', EventSchema);
 
 // Add a new event to the logs
 function addEvent(description) {
-    var newEvent = new EvebtModel();
+    var newEvent = new EventModel();
     newEvent.desc = description;
     newEvent.save();
 };
