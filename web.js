@@ -158,6 +158,19 @@ app.get("/", function (req, res) {
     }
 });
 
+function updateError(error, userid) {
+    if ((error.code === 190) && (error.error_subcode === 458)) {
+	// User removed authorization for app
+	PersonModel.findOne( {"facebook.userid" : userid}, function(err, person) {
+	    if ((!err) && (person))  {
+		console.log("!! Removing user because removed app: "+userid);
+		addEvent("Removing user because removed app: "+userid);
+		// person.remove();
+	    }
+	});
+    };
+};
+
 function updateFriends(id, first) {
     PersonModel.findOne({"facebook.userid" : id}, function(err, user) {
 	if (err) {
@@ -196,8 +209,7 @@ function updateFriends(id, first) {
 	    ],
 	    function(err, results){
 		if (err) {
-		    console.log("Error:"+id+"->");
-		    console.log(err);
+		    updateError(err, id);
 		    return
 		}
 		var newG = results[0],
