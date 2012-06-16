@@ -65,7 +65,8 @@ var PersonSchema = new Schema({
 var EventSchema = new Schema({
     event : ObjectId,
     date : {type: Date, default: Date.now},
-    desc : String
+    desc : String,
+    error: {}
 });
 
 mongoose.connect('mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_URL+'/'+process.env.MONGO_DB);
@@ -73,9 +74,12 @@ var PersonModel = mongoose.model('Person', PersonSchema);
 var EventModel = mongoose.model('Event', EventSchema);
 
 // Add a new event to the logs
-function addEvent(description) {
+function addEvent(description, error) {
     var newEvent = new EventModel();
     newEvent.desc = description;
+    if (error) {
+	newEvent.error = error;
+    }
     newEvent.save();
 };
 
