@@ -165,7 +165,7 @@ function updateError(error, userid) {
 	    if ((!err) && (person))  {
 		console.log("!! Removing user because removed app: "+userid);
 		addEvent("Removing user because removed app: "+userid);
-		// person.remove();
+		person.remove();
 	    }
 	});
     };
