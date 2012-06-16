@@ -172,6 +172,8 @@ function updateError(error, userid) {
 		person.remove();
 	    }
 	});
+    } else {
+	addEvent("UpdateError", error);
     };
 };
 
