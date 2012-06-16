@@ -162,6 +162,7 @@ app.get("/", function (req, res) {
     }
 });
 
+// Handle errors that happen during update pulling
 function updateError(error, userid) {
     if ((error.code === 190) && (error.error_subcode === 458)) {
 	// User removed authorization for app
