@@ -49,15 +49,25 @@ var ChangeSchema = new Schema({
     loss: [String]
 });
 
+var AcquaintanceSchema = new Schema({
+    person: ObjectId,
+    userid: Number,
+    name: String,
+    connect: Date,
+    disconnect: Date,
+    disabled: {type: Boolean, default: false}
+});
+
 var PersonSchema = new Schema({
     person : ObjectId,
     facebook: {
         userid: String,
 	authtoken: {type: String},
 	authexpire: {type: Date},
-	friendlist: [String],
+	friendlist: [Number],
 	lastcheck: {type: Date, default: Date.now},
-	changes: [ChangeSchema]
+	changes: [ChangeSchema],
+	connections: [AcquaintanceSchema]
     },
     lastlogin: {type: Date, default: Date.now}
 });
@@ -188,58 +198,108 @@ function updateFriends(id, first) {
 	} else {
 	    async.series([
 		function(callback){
-		    console.log(id, "Graph update")
-		    graph.setAccessToken(user.facebook.authtoken);
-		    graph.get(id, {fields : 'friends', limit: '5000', offset: '0'}, function(err, res) {
-			if (err) {
-			    callback(err, null);
-			} else {
-		            console.log(id);
-			    var newlistG = underscore.map(res.friends.data, function(val) {return val.id.toString(); });
-			    callback(null, newlistG);
-			}
-		    });
-		},
-		function(callback){
-		    console.log(id, "FQL update");
-		    var query = "SELECT uid, name FROM user where uid in (Select uid2 from friend where uid1=me())";
+		    console.log(id, "FQL multiupdate");
+		    var query = {
+			friends: "SELECT uid1 FROM friend WHERE uid2 = me()" ,
+			users: "SELECT name,uid FROM user WHERE uid in (SELECT uid1 FROM #friends)"
+		    };
 		    graph.setAccessToken(user.facebook.authtoken);
 		    graph.fql(query, function(err, res) {
-			if (err) {
-			    callback(err, null);
-			} else {
-			    var newlistF = underscore.map(res.data, function(x) {return x.uid.toString(); });
-			    callback(null, newlistF);
-			}
+			// Organize the returned data
+			var friends, users;
+			underscore.each(res.data, function(resdata) {
+			    if (resdata.name === 'friends') {
+				friends = resdata.fql_result_set;
+			    } else if (resdata.name === 'users') {
+				users = resdata.fql_result_set;
+			    };
+			});
+			friends = underscore.map(friends, function(x) { return parseInt(x.uid1); });
+			var results = {friends: friends, users: users}
+			callback(null, results);
 		    });
 		}
 	    ],
-	    function(err, results){
+	    function(err, res){
 		if (err) {
 		    updateError(err, id);
 		    return
 		}
-		var newG = results[0],
-		    newF = results[1];
-		var except = underscore.union(underscore.difference(newG, newF), underscore.difference(newF, newG));
-		if (except.length > 0) {
-		    addEvent("Different length for Graph/FQL "+id.toString()+":"+except.join());
-		};
+		var updateDate = Date.now();
+		var results = res[0];
+		var friends = results.friends; // this includes some disabled accounts too
+		var users = results.users;
+		var goodusers = underscore.map(users, function(x) { return parseInt(x.uid); });
+		var disableds = underscore.difference(friends, goodusers);
 
-		var newlist = newF;  // Trust FQL more somehow
+		var newlist = goodusers;
 		var oldlist = user.facebook.friendlist;
+
 		var gain = underscore.difference(newlist, oldlist);
 		var loss = underscore.difference(oldlist, newlist);
 
+		// Updating user database
+		// These connection IDs we have already.
+		var connids = underscore.map(user.facebook.connections, function(x) {return parseInt(x.userid);}); // even if userid is Number, have to be parsed otherwise strange bugs 
+		if (!user.facebook.connections) {
+		    user.facebook.connections = []
+		}
+
+		// add all new connections
+		var reallynew = false;
+		underscore.each(users, function(u) {
+		    var index = underscore.indexOf(connids, parseInt(u.uid));
+		    if (underscore.indexOf(connids, u.uid) < 0) {
+			var connuser = {name: u.name, userid: u.uid};
+			if (underscore.indexOf(gain, u.uid) >= 0) {
+			    connuser.connect = Date.now();
+			}
+			user.facebook.connections.push(connuser);
+			reallynew = true;
+		    }
+		});
+
+		// If things were modified, let's reload this list
+		if (reallynew) {
+		    var connids = underscore.map(user.facebook.connections, function(x) {return parseInt(x.userid);}); // even if userid is Number, have to be parsed otherwise strange bugs 
+		}
+
+		// Modify removed connections
+		var reallylost = false;
+		underscore.each(loss, function(u) {
+		    var idx = underscore.indexOf(connids, parseInt(u));
+		    console.log("???", idx, (u in connids));
+		    if (idx >= 0) {
+			reallylost = true;
+			console.log("Loss: "+idx);
+			lostuser = user.facebook.connections[idx];
+			lostuser.disconnect = updateDate;
+			console.log("--> disableds");
+			console.log(disableds);
+			if (underscore.indexOf(disableds, parseInt(u)) >= 0) {
+			    console.log("DISABLED!");
+			    lostuser.disabled = true;
+			}
+		    }
+		});
+
+		if (reallynew || reallylost) {
+		    user.save(function (err) {
+			if (!err) console.log('Save: success!');
+		    });
+		}
+		// end: update user database
+
+		// Store changes
 		if (first) {
 		    console.log("Firstupdate")
-	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": Date.now() }
+	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": updateDate }
 		} else if ((gain.length > 0) || (loss.length > 0)) {
 		    console.log("Friendsupdate", gain, loss);
-	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": Date.now(), "$push": {"facebook.changes": {"gain": gain, "loss": loss} } }
+	            update = { "facebook.friendlist": newlist, "facebook.lastcheck": updateDate, "$push": {"facebook.changes": {"gain": gain, "loss": loss, "date": updateDate} } }
 		} else {
 		    console.log("Singleupdate");
-		    update = { "facebook.lastcheck": Date.now() }
+		    update = { "facebook.lastcheck": updateDate }
 		}
 		var conditions = { "facebook.userid": id }
 	          , options = { multi: false };
@@ -297,6 +357,8 @@ app.get("/dash", function (req, res) {
 	PersonModel.findOne({"facebook.userid" : id}, function(err, user) {
 	    if (user.facebook.friendlist.length > 0) {
 		var grouped = underscore.groupBy(user.facebook.changes, function(change) {return getSimpleDate(change.date);});
+		var connectids = underscore.map(user.facebook.connections, function(x) {return parseInt(x.userid);});
+		var connectdata = {}
 		for (date in grouped) {
 		    var x = grouped[date];
 		    var y = underscore.reduce(x,
@@ -309,6 +371,22 @@ app.get("/dash", function (req, res) {
 		    var gain = underscore.difference(y.gain, y.loss);
 		    var loss = underscore.difference(y.loss, y.gain);
 		    grouped[date] = {gain: gain, loss: loss};
+		    underscore.each(grouped[date].gain, function(x) {
+			var idx = underscore.indexOf(connectids, parseInt(x), true);
+			if (idx >= 0) {
+			    connectdata[x] = user.facebook.connections[idx];
+			} else {
+			    connectdata[x] = {name: ''};
+			}
+		    });
+		    underscore.each(grouped[date].loss, function(x) {
+			var idx = underscore.indexOf(connectids, parseInt(x), true);
+			if (idx >= 0) {
+			    connectdata[x] = user.facebook.connections[idx];
+			} else {
+			    connectdata[x] = {name: '', disabled: false};
+			}
+		    });
 		}
 		var dates = Object.keys(grouped).sort().reverse();
 		var thisuser = {userid: id, friendcount: user.facebook.friendlist.length, authtoken: user.facebook.authtoken };
@@ -316,6 +394,7 @@ app.get("/dash", function (req, res) {
 		    title: "Friendcare",
 		    thisuser: thisuser,
 		    grouped: grouped,
+		    connectdata: connectdata,
 		    dates: dates,
 		    lastcheck: checktime(user.facebook.lastcheck),
 		    myapp: myapp,
@@ -334,6 +413,7 @@ app.get("/dash", function (req, res) {
 			title: "Friendcare",
 			thisuser: thisuser,
 			dates: [],
+			connectdata: {},
 			lastcheck: "just now",
 			myapp: myapp,
 			req: req
