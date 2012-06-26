@@ -14,7 +14,7 @@
     "url": "git://github.com/imrehg/friendcare.git"
   },
   "dependencies": {
-    "ejs":       "git://github.com/visionmedia/ejs.git#master",
+    "ejs":       "0.7.2",
     "express":   "2.5.10",
     "everyauth": "0.2.32",
     "mongoose": "2.7.0"
