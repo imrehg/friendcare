@@ -3,6 +3,7 @@ var express = require('express')
   , util = require('util')
   , everyauth = require('everyauth')
   , ejs = require('ejs')
+  , engine = require('ejs-locals')
   , graph = require('fbgraph')
   , mongoose = require('mongoose')
   , underscore = require('underscore')
@@ -15,18 +16,23 @@ var appID = process.env.FACEBOOK_APP_ID
   ;
 
 var myapp = { id : appID };
+var app = express();
 
-var app = express.createServer(
-    express.logger()
-  , express.static(__dirname + '/public')
-  , express.bodyParser()
-  , express.cookieParser()
-  , everyauth.middleware()
-  , express.session({secret: process.env.SESSION_SECRET || 'kdgfcbdgfsgftsrcgsgr'})
-  , express.errorHandler()
-);
-everyauth.helpExpress(app);
-everyauth.debug = true;
+app.engine('ejs', engine);
+app.set('views',__dirname + '/views');
+app.set('view engine', 'ejs');
+app.locals({
+  _layoutFile: true
+});
+
+app.use(express.logger());
+app.use(express.static('public'));
+app.use(express.bodyParser());
+app.use(express.cookieParser());
+app.use(everyauth.middleware());
+app.use(express.session({secret: process.env.SESSION_SECRET || 'kdgfcbdgfsgftsrcgsgr'}));
+app.use(express.errorHandler());
+everyauth.debug = false;
 
 // Ensure HTTPS: http://elias.kg/post/14971446990/force-ssl-with-express-js-on-heroku-nginx
 app.use(function(req, res, next) {
@@ -156,7 +162,6 @@ app.configure(function() {
     app.use(everyauth.middleware());
     app.use(express.methodOverride());
     app.use(app.router);
-    everyauth.helpExpress(app);
 });
 
 app.get("/", function (req, res) {
@@ -436,7 +441,7 @@ function NotFound(msg){
     Error.captureStackTrace(this, arguments.callee);
 }
 
-app.error(function(err, req, res, next){
+app.use(function(err, req, res, next){
     if (err instanceof NotFound) {
         res.render('404.ejs', { title: "Not found | Friendcare",
 				myapp: myapp,
@@ -445,9 +450,6 @@ app.error(function(err, req, res, next){
     } else {
 	throw err;
     }
-    // } else {
-    // 	res.send("Errored...", {status: 500});
-    // }
 });
 
 var port = process.env.PORT || 3000;
