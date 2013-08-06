@@ -394,6 +394,20 @@ app.get("/dash", function (req, res) {
 		    });
 		}
 		var dates = Object.keys(grouped).sort().reverse();
+		// Remove reundant dates where there's net zero gain and loss, because flaky Facebook API
+		var redundantDates = [];
+		for (var i = 0; i < dates.length; i++) {
+		    var daily = grouped[dates[i]];
+		    if ((daily.gain.length == 0) && (daily.loss.length == 0)) {
+			redundantDates.push(i)
+		    }
+		}
+		for (var i = 0; i < redundantDates.length; i++) {
+		    var d = dates.splice(redundantDates[i]-i, 1);
+		    console.log(d, grouped[d]);
+		    delete(grouped[d]);
+		}
+
 		var thisuser = {userid: id, friendcount: user.facebook.friendlist.length, authtoken: user.facebook.authtoken };
 		res.render('dash.ejs', {
 		    title: "Friendcare",
