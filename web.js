@@ -377,7 +377,7 @@ app.get("/dash", function (req, res) {
 		    var loss = underscore.difference(y.loss, y.gain);
 		    grouped[date] = {gain: gain, loss: loss};
 		    underscore.each(grouped[date].gain, function(x) {
-			var idx = underscore.indexOf(connectids, parseInt(x), true);
+			var idx = underscore.indexOf(connectids, parseInt(x), false);
 			if (idx >= 0) {
 			    connectdata[x] = user.facebook.connections[idx];
 			} else {
