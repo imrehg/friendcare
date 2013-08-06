@@ -18,7 +18,7 @@
 	<div class="span12" id="listing">
           <div class="row-fluid">
             <div class="span6">
-              <a class="thumbnail" style="width: 100px;" href="https://www.facebook.com/<%= thisuser.userid %>" target="_blank" title="Click to open your profile."><img src="https://graph.facebook.com/<%= thisuser.userid %>/picture?type=normal"></a>
+              <a class="thumbnail" style="width: 100px;" href="https://www.facebook.com/<%= thisuser.userid %>" target="_blank" title="Click to open your profile."><img src="https://graph.facebook.com/<%= thisuser.userid %>/picture?width=100&height=100"></a>
               <h3>At the moment we know about <a href="https://www.facebook.com/me/friends" target="_blank" title="Click to open your friendlist on Facebook."><%= thisuser.friendcount %></a> friends of yours.</h3> Last updated <%= lastcheck %>.
             </div>
           </div>
@@ -31,7 +31,7 @@
 	         <h2>Gained</h2>
                  <ul class="thumbnails">
 		 <% for (var g = 0; g < grouped[dates[c]].gain.length; g++) { %>
-		    <li><a href="https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>" target="_blank" class="smallprofile thumbnail"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].gain[g] %>/picture?type=normal&return_ssl_resources=1" title="Click to open their profile page."></a><div class="caption"><p align="center" class="profilename"><%= connectdata[grouped[dates[c]].gain[g]].name %></p></div></li>
+		    <li><a href="https://www.facebook.com/<%=  grouped[dates[c]].gain[g] %>" target="_blank" class="smallprofile thumbnail"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].gain[g] %>/picture?width=100&height=100&return_ssl_resources=1" title="Click to open their profile page."></a><div class="caption"><p align="center" class="profilename"><%= connectdata[grouped[dates[c]].gain[g]].name %></p></div></li>
 		 <% }%>
                  </ul>
 	         <% } else { %>
@@ -44,9 +44,9 @@
                  <ul class="thumbnails">
 		 <% for (var x = 0; x < grouped[dates[c]].loss.length; x++) { %>
 		   <% if (connectdata[grouped[dates[c]].loss[x]].disabled) { %>
-		    <li><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture?type=normal&return_ssl_resources=1" title="Can't access profile page."><div class="caption"><p align="center" class="profilename"><%= connectdata[grouped[dates[c]].loss[x]].name %><br><span class="label label-warning">Disabled</span></p></div></li>
+		    <li><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture?width=100&height=100&return_ssl_resources=1" title="Can't access profile page."><div class="caption"><p align="center" class="profilename"><%= connectdata[grouped[dates[c]].loss[x]].name %><br><span class="label label-warning">Disabled</span></p></div></li>
 		    <% } else { %>
-		    <li><a href="https://www.facebook.com/<%=  grouped[dates[c]].loss[x] %>" target="_blank" class="smallprofile thumbnail"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture?type=normal&return_ssl_resources=1" title="Click to open their profile page."></a><div class="caption"><p align="center" class="profilename"><%= connectdata[grouped[dates[c]].loss[x]].name %></p></div></li>
+		    <li><a href="https://www.facebook.com/<%=  grouped[dates[c]].loss[x] %>" target="_blank" class="smallprofile thumbnail"><img src="https://graph.facebook.com/<%=  grouped[dates[c]].loss[x] %>/picture?width=100&height=100&return_ssl_resources=1" title="Click to open their profile page."></a><div class="caption"><p align="center" class="profilename"><%= connectdata[grouped[dates[c]].loss[x]].name %></p></div></li>
 		    <% } %>
 		 <% } %>
                  </ul>
